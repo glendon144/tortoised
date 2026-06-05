@@ -1,0 +1,249 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+    echo "Usage: tortoised_deploy [HOST]"
+    echo
+    echo "Example:"
+    echo "  tortoised_deploy 192.168.1.110"
+    echo "  tortoised_deploy imac.local"
+    exit 1
+fi
+
+HOST="$1"
+
+LOCAL_SRC="${LOCAL_SRC:-$HOME/src/tortoised}"
+REMOTE_SRC="${REMOTE_SRC:-~/src/tortoised}"
+REMOTE_VENV="${REMOTE_VENV:-~/.venvs/tortoised}"
+REMOTE_PORT="${REMOTE_PORT:-8770}"
+REMOTE_HOST_BIND="${REMOTE_HOST_BIND:-127.0.0.1}"
+
+ARCHIVE="/tmp/tortoised-deploy-$$.tgz"
+
+echo "==> Deploying tortoised to $HOST"
+echo "==> Local source: $LOCAL_SRC"
+echo "==> Remote source: $REMOTE_SRC"
+echo "==> Remote venv:   $REMOTE_VENV"
+echo
+
+if [ ! -d "$LOCAL_SRC" ]; then
+    echo "ERROR: local source directory not found: $LOCAL_SRC"
+    exit 1
+fi
+
+if [ ! -f "$LOCAL_SRC/tortoised.py" ]; then
+    echo "ERROR: expected $LOCAL_SRC/tortoised.py"
+    exit 1
+fi
+
+echo "==> Creating deployment archive"
+tar \
+  --exclude='.git' \
+  --exclude='__pycache__' \
+  --exclude='*.pyc' \
+  --exclude='.venv' \
+  --exclude='venv' \
+  -czf "$ARCHIVE" \
+  -C "$LOCAL_SRC" .
+
+echo "==> Creating remote directory"
+ssh "$HOST" "mkdir -p ~/src/tortoised ~/.venvs"
+
+echo "==> Copying archive to target"
+scp "$ARCHIVE" "$HOST:/tmp/tortoised-deploy.tgz"
+
+echo "==> Unpacking source on target"
+ssh "$HOST" '
+set -euo pipefail
+mkdir -p ~/src/tortoised
+tar -xzf /tmp/tortoised-deploy.tgz -C ~/src/tortoised
+rm -f /tmp/tortoised-deploy.tgz
+chmod +x ~/src/tortoised/*.sh 2>/dev/null || true
+chmod +x ~/src/tortoised/setup-keys 2>/dev/null || true
+chmod +x ~/src/tortoised/key-test 2>/dev/null || true
+chmod +x ~/src/tortoised/verify-local.sh 2>/dev/null || true
+'
+
+echo "==> Installing Python dependencies on target"
+ssh "$HOST" "
+set -euo pipefail
+cd ~/src/tortoised
+
+python3 -m venv ~/.venvs/tortoised
+. ~/.venvs/tortoised/bin/activate
+
+python -m pip install --upgrade pip wheel setuptools
+python -m pip install fastapi uvicorn pydantic requests
+"
+
+echo "==> Creating /etc/tortoise-ai config and service keys on target"
+ssh -t "$HOST" "
+set -euo pipefail
+
+sudo mkdir -p /etc/tortoise-ai/keys
+
+if [ ! -f /etc/tortoise-ai/keys/tortoised_ed25519 ]; then
+  sudo ssh-keygen -t ed25519 \
+    -f /etc/tortoise-ai/keys/tortoised_ed25519 \
+    -C \"tortoised@\$(hostname)\" \
+    -N \"\"
+fi
+
+sudo tee /etc/tortoise-ai/tortoised.json >/dev/null <<JSON
+{
+  \"node_id\": \"tortoised@\$(hostname)\",
+  \"hostname\": \"\$(hostname)\",
+  \"machine_role\": \"distributed-cognition-node\",
+  \"description\": \"Tortoise AI node deployed by tortoised_deploy for service discovery and policy disclosure.\",
+  \"services\": [
+    {
+      \"name\": \"tortoised\",
+      \"role\": \"node-registry\",
+      \"url\": \"http://127.0.0.1:${REMOTE_PORT}\",
+      \"status\": \"configured\"
+    },
+    {
+      \"name\": \"clones-brain\",
+      \"role\": \"local-memory\",
+      \"url\": \"http://127.0.0.1:8765\",
+      \"status\": \"configured\"
+    },
+    {
+      \"name\": \"dream-server\",
+      \"role\": \"ambiguous-context\",
+      \"url\": \"http://127.0.0.1:8181\",
+      \"status\": \"configured\"
+    }
+  ],
+  \"policy\": {
+    \"allow_discovery\": true,
+    \"allow_query\": true,
+    \"allow_capture\": false,
+    \"allow_remote_execution\": false,
+    \"requires_broker_for_write\": true,
+    \"requires_broker_for_service_restart\": true,
+    \"requires_broker_for_package_install\": true
+  }
+}
+JSON
+
+sudo sh -c 'echo \"local-test \$(cat /etc/tortoise-ai/keys/tortoised_ed25519.pub)\" > /etc/tortoise-ai/allowed_signers'
+
+sudo chmod 755 /etc/tortoise-ai
+sudo chmod 755 /etc/tortoise-ai/keys
+sudo chmod 640 /etc/tortoise-ai/keys/tortoised_ed25519
+sudo chmod 644 /etc/tortoise-ai/keys/tortoised_ed25519.pub
+sudo chmod 644 /etc/tortoise-ai/allowed_signers
+
+# Let the deploying user read the service private key for the local handshake smoke test.
+sudo chgrp \$(id -gn) /etc/tortoise-ai/keys/tortoised_ed25519
+"
+
+echo "==> Installing helper scripts on target"
+ssh "$HOST" "
+set -euo pipefail
+cd ~/src/tortoised
+
+cat > start-tortoised <<'REMOTE_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd \"\$HOME/src/tortoised\"
+source \"\$HOME/.venvs/tortoised/bin/activate\"
+
+export TORTOISED_HOST=\"\${TORTOISED_HOST:-127.0.0.1}\"
+export TORTOISED_PORT=\"\${TORTOISED_PORT:-8770}\"
+
+exec python tortoised.py
+REMOTE_EOF
+
+chmod +x start-tortoised
+
+cat > stop-tortoised <<'REMOTE_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+PORT=\"\${TORTOISED_PORT:-8770}\"
+PIDS=\"\$(lsof -tiTCP:\"\$PORT\" -sTCP:LISTEN 2>/dev/null || true)\"
+
+if [ -z \"\$PIDS\" ]; then
+    echo \"No tortoised listener found on port \$PORT\"
+    exit 0
+fi
+
+echo \"Stopping tortoised process(es): \$PIDS\"
+kill \$PIDS 2>/dev/null || true
+sleep 1
+
+PIDS_LEFT=\"\$(lsof -tiTCP:\"\$PORT\" -sTCP:LISTEN 2>/dev/null || true)\"
+if [ -n \"\$PIDS_LEFT\" ]; then
+    echo \"Force stopping tortoised process(es): \$PIDS_LEFT\"
+    kill -9 \$PIDS_LEFT 2>/dev/null || true
+fi
+REMOTE_EOF
+
+chmod +x stop-tortoised
+"
+
+echo "==> Starting tortoised on target for smoke test"
+ssh "$HOST" "
+set -euo pipefail
+cd ~/src/tortoised
+
+./stop-tortoised || true
+
+LOG=~/src/tortoised/tortoised.log
+: > \"\$LOG\"
+
+nohup ./start-tortoised > \"\$LOG\" 2>&1 &
+
+sleep 2
+
+if ! curl -fsS http://127.0.0.1:${REMOTE_PORT}/health >/dev/null; then
+    echo 'ERROR: tortoised did not answer /health'
+    echo '--- tortoised.log ---'
+    cat \"\$LOG\" || true
+    exit 1
+fi
+"
+
+echo "==> Smoke test: /health"
+ssh "$HOST" "curl -fsS http://127.0.0.1:${REMOTE_PORT}/health && echo"
+
+echo "==> Smoke test: /node"
+ssh "$HOST" "curl -fsS http://127.0.0.1:${REMOTE_PORT}/node | python3 -m json.tool"
+
+echo "==> Smoke test: /services"
+ssh "$HOST" "curl -fsS http://127.0.0.1:${REMOTE_PORT}/services | python3 -m json.tool"
+
+echo "==> Smoke test: /policy"
+ssh "$HOST" "curl -fsS http://127.0.0.1:${REMOTE_PORT}/policy | python3 -m json.tool"
+
+echo "==> Smoke test: challenge/verify"
+ssh "$HOST" "
+set -euo pipefail
+cd ~/src/tortoised
+BASE_URL=http://127.0.0.1:${REMOTE_PORT} ./verify-local.sh
+"
+
+echo
+echo "==> Deployment complete."
+echo
+echo "On target $HOST:"
+echo "  Source:        ~/src/tortoised"
+echo "  Virtualenv:    ~/.venvs/tortoised"
+echo "  Config:        /etc/tortoise-ai/tortoised.json"
+echo "  Public key:    /etc/tortoise-ai/keys/tortoised_ed25519.pub"
+echo "  Log:           ~/src/tortoised/tortoised.log"
+echo
+echo "Manual target commands:"
+echo "  cd ~/src/tortoised"
+echo "  ./start-tortoised"
+echo "  ./stop-tortoised"
+echo
+echo "Query from target:"
+echo "  curl http://127.0.0.1:${REMOTE_PORT}/health"
+echo "  curl http://127.0.0.1:${REMOTE_PORT}/services"
+echo
+
+rm -f "$ARCHIVE"

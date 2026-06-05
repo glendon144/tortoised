@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$HOME/src/tortoised"
+source "$HOME/.venvs/tortoised/bin/activate"
+
+export TORTOISED_HOST="${TORTOISED_HOST:-127.0.0.1}"
+export TORTOISED_PORT="${TORTOISED_PORT:-8770}"
+
+exec python tortoised.py

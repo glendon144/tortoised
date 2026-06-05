@@ -1,0 +1,265 @@
+Script started on 2026-05-27 09:42:22-07:00 [TERM="xterm-256color" TTY="/dev/pts/6" COLUMNS="84" LINES="23"]
+[?2004h]0;gross@optiplex310: ~/src/tortoised[01;32mgross@optiplex310[00m:[01;34m~/src/tortoised[00m$ ./tortoised_deploy 192.168.1.106
+[?2004l==> Deploying tortoised to 192.168.1.106
+==> Local source: /home/gross/src/tortoised
+==> Remote source: ~/src/tortoised
+==> Remote venv:   ~/.venvs/tortoised
+
+==> Creating deployment archive
+==> Creating remote directory
+==> Copying archive to target
+tortoised-deploy-701773.tgz                         0%    0     0.0KB/s   --:-- ETAtortoised-deploy-701773.tgz                       100% 5871     1.9MB/s   00:00    
+==> Unpacking source on target
+==> Installing Python dependencies on target
+Requirement already satisfied: pip in /Users/gross/.venvs/tortoised/lib/python3.9/site-packages (21.2.4)
+Collecting pip
+  Using cached pip-26.0.1-py3-none-any.whl (1.8 MB)
+Collecting wheel
+  Downloading wheel-0.47.0-py3-none-any.whl (32 kB)
+Requirement already satisfied: setuptools in /Users/gross/.venvs/tortoised/lib/python3.9/site-packages (58.0.4)
+Collecting setuptools
+  Downloading setuptools-82.0.1-py3-none-any.whl (1.0 MB)
+Collecting packaging>=24.0
+  Downloading packaging-26.2-py3-none-any.whl (100 kB)
+Installing collected packages: packaging, wheel, setuptools, pip
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 58.0.4
+    Uninstalling setuptools-58.0.4:
+      Successfully uninstalled setuptools-58.0.4
+  Attempting uninstall: pip
+    Found existing installation: pip 21.2.4
+    Uninstalling pip-21.2.4:
+      Successfully uninstalled pip-21.2.4
+Successfully installed packaging-26.2 pip-26.0.1 setuptools-82.0.1 wheel-0.47.0
+Collecting fastapi
+  Downloading fastapi-0.128.8-py3-none-any.whl.metadata (30 kB)
+Collecting uvicorn
+  Downloading uvicorn-0.39.0-py3-none-any.whl.metadata (6.8 kB)
+Collecting pydantic
+  Downloading pydantic-2.13.4-py3-none-any.whl.metadata (109 kB)
+Collecting requests
+  Using cached requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+Collecting starlette<1.0.0,>=0.40.0 (from fastapi)
+  Downloading starlette-0.49.3-py3-none-any.whl.metadata (6.4 kB)
+Collecting typing-extensions>=4.8.0 (from fastapi)
+  Using cached typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting typing-inspection>=0.4.2 (from fastapi)
+  Using cached typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+Collecting annotated-doc>=0.0.2 (from fastapi)
+  Downloading annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+Collecting anyio<5,>=3.6.2 (from starlette<1.0.0,>=0.40.0->fastapi)
+  Using cached anyio-4.12.1-py3-none-any.whl.metadata (4.3 kB)
+Collecting exceptiongroup>=1.0.2 (from anyio<5,>=3.6.2->starlette<1.0.0,>=0.40.0->fastapi)
+  Using cached exceptiongroup-1.3.1-py3-none-any.whl.metadata (6.7 kB)
+Collecting idna>=2.8 (from anyio<5,>=3.6.2->starlette<1.0.0,>=0.40.0->fastapi)
+  Downloading idna-3.16-py3-none-any.whl.metadata (6.4 kB)
+Collecting click>=7.0 (from uvicorn)
+  Downloading click-8.1.8-py3-none-any.whl.metadata (2.3 kB)
+Collecting h11>=0.8 (from uvicorn)
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting annotated-types>=0.6.0 (from pydantic)
+  Using cached annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.46.4 (from pydantic)
+  Downloading pydantic_core-2.46.4-cp39-cp39-macosx_10_12_x86_64.whl.metadata (6.6 kB)
+Collecting charset_normalizer<4,>=2 (from requests)
+  Downloading charset_normalizer-3.4.7-cp39-cp39-macosx_10_9_universal2.whl.metadata (40 kB)
+Collecting urllib3<3,>=1.21.1 (from requests)
+  Using cached urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Collecting certifi>=2017.4.17 (from requests)
+  Downloading certifi-2026.5.20-py3-none-any.whl.metadata (2.5 kB)
+Downloading fastapi-0.128.8-py3-none-any.whl (103 kB)
+Downloading starlette-0.49.3-py3-none-any.whl (74 kB)
+Using cached anyio-4.12.1-py3-none-any.whl (113 kB)
+Downloading uvicorn-0.39.0-py3-none-any.whl (68 kB)
+Downloading pydantic-2.13.4-py3-none-any.whl (472 kB)
+Downloading pydantic_core-2.46.4-cp39-cp39-macosx_10_12_x86_64.whl (2.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 23.2 MB/s  0:00:00
+Using cached requests-2.32.5-py3-none-any.whl (64 kB)
+Downloading charset_normalizer-3.4.7-cp39-cp39-macosx_10_9_universal2.whl (299 kB)
+Downloading idna-3.16-py3-none-any.whl (74 kB)
+Using cached urllib3-2.6.3-py3-none-any.whl (131 kB)
+Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+Using cached annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Downloading certifi-2026.5.20-py3-none-any.whl (134 kB)
+Downloading click-8.1.8-py3-none-any.whl (98 kB)
+Using cached exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Using cached typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Installing collected packages: urllib3, typing-extensions, idna, h11, click, charset_normalizer, certifi, annotated-types, annotated-doc, uvicorn, typing-inspection, requests, pydantic-core, exceptiongroup, pydantic, anyio, starlette, fastapi
+
+Successfully installed annotated-doc-0.0.4 annotated-types-0.7.0 anyio-4.12.1 certifi-2026.5.20 charset_normalizer-3.4.7 click-8.1.8 exceptiongroup-1.3.1 fastapi-0.128.8 h11-0.16.0 idna-3.16 pydantic-2.13.4 pydantic-core-2.46.4 requests-2.32.5 starlette-0.49.3 typing-extensions-4.15.0 typing-inspection-0.4.2 urllib3-2.6.3 uvicorn-0.39.0
+==> Creating /etc/tortoise-ai config and service keys on target
+Password:
+Generating public/private ed25519 key pair.
+Your identification has been saved in /etc/tortoise-ai/keys/tortoised_ed25519
+Your public key has been saved in /etc/tortoise-ai/keys/tortoised_ed25519.pub
+The key fingerprint is:
+SHA256:oh+HKt2q4EI+/9SHEYJG19ijDF+otar0bPMaIcLtETI tortoised@Intel-Mini
+The key's randomart image is:
++--[ED25519 256]--+
+|   . .=          |
+|  ..o+ =         |
+| E +*.+..        |
+|. =..=. .        |
+|.o +. ..S        |
+|.oo.o..oo        |
+|= ++.ooo..       |
+|o=.=+o.o.        |
+|..==B+.          |
++----[SHA256]-----+
+Connection to 192.168.1.106 closed.
+==> Installing helper scripts on target
+==> Starting tortoised on target for smoke test
+No tortoised listener found on port 8770
+==> Smoke test: /health
+{"ok":true,"service":"tortoised","version":"0.1.0","node_id":"tortoised@Intel-Mini","hostname":"Intel-Mini","time":"2026-05-27T16:43:02.428500+00:00"}
+==> Smoke test: /node
+{
+    "ok": true,
+    "node": {
+        "service": "tortoised",
+        "version": "0.1.0",
+        "node_id": "tortoised@Intel-Mini",
+        "hostname": "Intel-Mini",
+        "machine_role": "distributed-cognition-node",
+        "description": "Tortoise AI node deployed by tortoised_deploy for service discovery and policy disclosure.",
+        "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHXy6bBakuzZbyp1WDlk6SNSQwkt53nyJVRs2GKOuX60 tortoised@Intel-Mini",
+        "public_key_fingerprint": "256 SHA256:oh+HKt2q4EI+/9SHEYJG19ijDF+otar0bPMaIcLtETI tortoised@Intel-Mini (ED25519)",
+        "config_path": "/etc/tortoise-ai/tortoised.json",
+        "allowed_signers_path": "/etc/tortoise-ai/allowed_signers",
+        "time": "2026-05-27T16:43:03.182485+00:00"
+    }
+}
+==> Smoke test: /services
+{
+    "ok": true,
+    "node_id": "tortoised@Intel-Mini",
+    "services": [
+        {
+            "name": "tortoised",
+            "role": "node-registry",
+            "url": "http://127.0.0.1:8770",
+            "status": "configured"
+        },
+        {
+            "name": "clones-brain",
+            "role": "local-memory",
+            "url": "http://127.0.0.1:8765",
+            "status": "configured"
+        },
+        {
+            "name": "dream-server",
+            "role": "ambiguous-context",
+            "url": "http://127.0.0.1:8181",
+            "status": "configured"
+        }
+    ],
+    "time": "2026-05-27T16:43:03.995816+00:00"
+}
+==> Smoke test: /policy
+{
+    "ok": true,
+    "node_id": "tortoised@Intel-Mini",
+    "policy": {
+        "allow_discovery": true,
+        "allow_query": true,
+        "allow_capture": false,
+        "allow_remote_execution": false,
+        "requires_broker_for_write": true,
+        "requires_broker_for_service_restart": true,
+        "requires_broker_for_package_install": true
+    },
+    "time": "2026-05-27T16:43:04.816250+00:00"
+}
+==> Smoke test: challenge/verify
+==> Requesting challenge from http://127.0.0.1:8770
+{
+    "ok": true,
+    "node_id": "tortoised@Intel-Mini",
+    "challenge_id": "DFGJDkv8_qTZ949X0Qxunws7MAigJAwQ",
+    "nonce": "tzS8eczL49I5HZot1WOuwPz39MWkRupqtMZu9KuoltM",
+    "issued_at": "2026-05-27T16:43:05.759020+00:00",
+    "expires_at": "2026-05-27T16:45:05.759020+00:00",
+    "namespace": "tortoised",
+    "instructions": "Sign the nonce with ssh-keygen -Y sign using namespace tortoised, then POST the signature to /verify."
+}
+
+==> Signing nonce with /etc/tortoise-ai/keys/tortoised_ed25519
+
+==> Posting verification
+{
+    "ok": true,
+    "verified": true,
+    "node_id": "tortoised@Intel-Mini",
+    "principal": "local-test",
+    "manifest": {
+        "node": {
+            "service": "tortoised",
+            "version": "0.1.0",
+            "node_id": "tortoised@Intel-Mini",
+            "hostname": "Intel-Mini",
+            "machine_role": "distributed-cognition-node",
+            "description": "Tortoise AI node deployed by tortoised_deploy for service discovery and policy disclosure.",
+            "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHXy6bBakuzZbyp1WDlk6SNSQwkt53nyJVRs2GKOuX60 tortoised@Intel-Mini",
+            "public_key_fingerprint": "256 SHA256:oh+HKt2q4EI+/9SHEYJG19ijDF+otar0bPMaIcLtETI tortoised@Intel-Mini (ED25519)",
+            "config_path": "/etc/tortoise-ai/tortoised.json",
+            "allowed_signers_path": "/etc/tortoise-ai/allowed_signers",
+            "time": "2026-05-27T16:43:05.997592+00:00"
+        },
+        "services": [
+            {
+                "name": "tortoised",
+                "role": "node-registry",
+                "url": "http://127.0.0.1:8770",
+                "status": "configured"
+            },
+            {
+                "name": "clones-brain",
+                "role": "local-memory",
+                "url": "http://127.0.0.1:8765",
+                "status": "configured"
+            },
+            {
+                "name": "dream-server",
+                "role": "ambiguous-context",
+                "url": "http://127.0.0.1:8181",
+                "status": "configured"
+            }
+        ],
+        "policy": {
+            "allow_discovery": true,
+            "allow_query": true,
+            "allow_capture": false,
+            "allow_remote_execution": false,
+            "requires_broker_for_write": true,
+            "requires_broker_for_service_restart": true,
+            "requires_broker_for_package_install": true
+        }
+    },
+    "manifest_signature": null,
+    "time": "2026-05-27T16:43:06.006554+00:00"
+}
+
+==> Deployment complete.
+
+On target 192.168.1.106:
+  Source:        ~/src/tortoised
+  Virtualenv:    ~/.venvs/tortoised
+  Config:        /etc/tortoise-ai/tortoised.json
+  Public key:    /etc/tortoise-ai/keys/tortoised_ed25519.pub
+  Log:           ~/src/tortoised/tortoised.log
+
+Manual target commands:
+  cd ~/src/tortoised
+  ./start-tortoised
+  ./stop-tortoised
+
+Query from target:
+  curl http://127.0.0.1:8770/health
+  curl http://127.0.0.1:8770/services
+
+[?2004h]0;gross@optiplex310: ~/src/tortoised[01;32mgross@optiplex310[00m:[01;34m~/src/tortoised[00m$ exit
+[?2004lexit
+
+Script done on 2026-05-27 09:43:10-07:00 [COMMAND_EXIT_CODE="0"]

@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -lt 1 ]; then
+    echo "Usage: tortoise_ping [HOST ...]"
+    echo
+    echo "Example:"
+    echo "  tortoise_ping 127.0.0.1 192.168.1.110"
+    echo "  tortoise_ping optiplex310 192.168.1.110 bedroom-mini"
+    exit 1
+fi
+
+for HOST in "$@"; do
+    echo
+    echo "================================================================"
+    echo "🐢 $HOST"
+    echo "================================================================"
+
+    if [ "$HOST" = "localhost" ] || [ "$HOST" = "127.0.0.1" ] || [ "$HOST" = "$(hostname)" ]; then
+        RUN_LOCAL=1
+    else
+        RUN_LOCAL=0
+    fi
+
+    if [ "$RUN_LOCAL" -eq 1 ]; then
+        NODE_JSON="$(curl -fsS http://127.0.0.1:8770/node 2>/dev/null || true)"
+        RECENT_JSON="$(curl -fsS 'http://127.0.0.1:8765/list_recent?limit=1' 2>/dev/null || true)"
+    else
+        NODE_JSON="$(ssh "$HOST" "curl -fsS http://127.0.0.1:8770/node" 2>/dev/null || true)"
+        RECENT_JSON="$(ssh "$HOST" "curl -fsS 'http://127.0.0.1:8765/list_recent?limit=1'" 2>/dev/null || true)"
+    fi
+
+    if [ -z "$NODE_JSON" ]; then
+        echo "No tortoised response from $HOST on 127.0.0.1:8770."
+        continue
+    fi
+
+    if [ -z "$RECENT_JSON" ]; then
+        echo "tortoised answered, but clones-brain did not answer on 127.0.0.1:8765."
+        echo
+        echo "$NODE_JSON" | python3 - <<'PY'
+import json, sys
+
+data = json.load(sys.stdin)
+node = data.get("node", {})
+print(f"Node: {node.get('node_id', 'unknown')}")
+print(f"Host: {node.get('hostname', 'unknown')}")
+print(f"Role: {node.get('machine_role', 'unknown')}")
+PY
+        continue
+    fi
+
+    python3 - "$NODE_JSON" "$RECENT_JSON" <<'PY'
+import json
+import sys
+import textwrap
+
+node_data = json.loads(sys.argv[1])
+recent_data = json.loads(sys.argv[2])
+
+node = node_data.get("node", {})
+thoughts = recent_data.get("thoughts", [])
+
+node_id = node.get("node_id", "unknown-node")
+hostname = node.get("hostname", "unknown-host")
+role = node.get("machine_role", "unknown-role")
+fingerprint = node.get("public_key_fingerprint") or "no fingerprint"
+
+print(f"Node: {node_id}")
+print(f"Host: {hostname}")
+print(f"Role: {role}")
+print(f"Key:  {fingerprint}")
+
+if not thoughts:
+    print()
+    print("Chorus: I am awake, but I remember nothing yet.")
+    sys.exit(0)
+
+thought = thoughts[0]
+
+title = thought.get("title") or "Untitled thought"
+thought_type = thought.get("thought_type") or "unknown"
+source = thought.get("source") or "unknown"
+created_at = thought.get("created_at") or "unknown time"
+body = thought.get("body") or ""
+
+print()
+print(f"Latest thought: {title}")
+print(f"Type: {thought_type} · Source: {source} · Created: {created_at}")
+print()
+print("Chorus:")
+print(textwrap.indent(textwrap.shorten(body.replace('\\n', ' '), width=700, placeholder='…'), "  "))
+PY
+
+done
+
+echo
+echo "================================================================"
+echo "🐢 Chorus complete."
+echo "================================================================"
