@@ -1,0 +1,2 @@
+sudo sh -c 'echo "local-test $(cat /etc/tortoise-ai/keys/tortoised_ed25519.pub)" > /etc/tortoise-ai/allowed_signers'
+sudo chmod 644 /etc/tortoise-ai/allowed_signers
